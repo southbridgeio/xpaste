@@ -1,0 +1,15 @@
+img{
+	-webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
+    filter: grayscale(100%);
+}
+/*
+https://www.w3schools.com/cssref/playit.asp?filename=playcss_filter&preval=invert(100%25)
+примеры фильтров
+*/
+
+.selector{
+	pointer-events: none;
+}
+/*
+https://developer.mozilla.org/ru/docs/Web/CSS/pointer-events
+*/

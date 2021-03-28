@@ -1,0 +1,63 @@
+name: xpaste
+version: 0.1.1
+
+authors:
+  - constxife <constxife@yandex.ru>
+  - Evgenii Tereshkov <evg.krsk@gmail.com>
+
+crystal: 0.35.1
+
+license: MIT
+
+targets:
+  xpaste:
+    main: src/xpaste.cr
+
+executables:
+  - xpaste
+dependencies:
+  amber:
+    github: amberframework/amber
+    version: 0.36.0
+    # branch: master
+
+  granite:
+    github: amberframework/granite
+    version: ~> 0.22.1
+
+  quartz_mailer:
+    github: amberframework/quartz-mailer
+    version: ~> 0.7.1
+
+  jasper_helpers:
+    github: amberframework/jasper-helpers
+    version: ~> 0.3.0
+
+  pg:
+    github: will/crystal-pg
+    version: ~> 0.23.0
+
+  citrine-i18n:
+    github: constXife/citrine-i18n
+    branch: master
+
+  airbrake:
+    github: klacointe/airbrake.cr
+
+  markd:
+    github: icyleaf/markd
+
+  crometheus:
+    gitlab: evgkrsk/crometheus
+    version: ~> 0.2.1
+
+development_dependencies:
+  mass_spec:
+    github: c910335/mass-spec
+    version: ~> 0.3.1
+  timecop:
+    github: crystal-community/timecop.cr
+    version: ~> 0.4.0
+  ameba:
+    github: crystal-ameba/ameba
+    version: ~> 0.13.1

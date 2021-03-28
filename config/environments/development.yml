@@ -1,0 +1,23 @@
+secret_key_base: LX8S7GnKYQ2j46kJlmzyAW139iSE2MOnTxjW6yZwstE
+port: 3000
+name: xpaste
+
+host: localhost
+port_reuse: true
+process_count: 1
+# ssl_key_file:
+# ssl_cert_file:
+redis_url: "redis://localhost:6379"
+database_url: postgres://postgres@localhost:5432/xpaste_development
+auto_reload: true
+
+session:
+  key: amber.session
+  store: signed_cookie
+  expires: 0
+
+smtp:
+  enabled: false
+
+secrets:
+  description: Store your development secrets credentials and settings here.

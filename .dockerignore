@@ -1,0 +1,16 @@
+.cache
+.gitignore
+.gitlab-ci.yml
+.kube
+.helm
+node_modules
+.git
+docker-compose*
+.ci-status.sh
+bin/xpaste
+bin/xpaste.dwarf
+.yamllint
+.eslintrc.yml
+rendered-chart
+cypress
+cypress.json

@@ -1,0 +1,2 @@
+require "crometheus"
+require "crometheus"

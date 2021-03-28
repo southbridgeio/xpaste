@@ -1,0 +1,9 @@
+div.center
+  == t("pastes.show.destroy_alert")
+
+  br
+
+  p
+    == link_to t("pastes.show.open_and_destroy"), "/p/#{paste.permalink}?destroy=true", class: "button"
+
+    == link_to t("pastes.show.go_to_root"), "/", class: "button alt_button"
