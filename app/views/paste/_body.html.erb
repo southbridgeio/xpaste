@@ -1,0 +1,7 @@
+<pre class="code <%= @paste.language && "line-numbers" %> language-<%= @paste.language %>">
+<% if @highlight %>
+<code><%= @body %></code>
+<% else %>
+<%= @body %>
+<% end %>
+</pre>

@@ -1,0 +1,46 @@
+<div class="box-form">
+  <%= form_with(model: @paste, url: @paste.id ? paste_path(paste) : p_index_path, method: @paste.id ? :patch : :post, class: "formats-form", local: true) do |form| %>
+    <div class="box-formats">
+      <div class="formats-choice">
+        <ul class="formats-choice__list">
+          <li class="formats-choice__item formats-choice__item js-formats-choice">
+            <button class="button button1 active"><%= t("pastes.form.formats.text") %></button>
+            <button class="button button2"><%= t("pastes.form.formats.password") %></button>
+            <button class="button button3"><%= t("pastes.form.formats.code") %></button>
+            <div class="format_select">
+              <p><%= t("activerecord.attributes.paste.language") %>:</p>
+              <%= form.select :language, options_for_select(Paste::LANGUAGE.map { |lang| [lang.to_s, lang.to_s] }), {}, id: "paste_language" %>
+            </div>
+          </li>
+        </ul>
+        <div class="formats-form__text">
+          <%= form.text_area :body, autofocus: true, id: "paste_body", class: "formats-form__textarea", rows: "5", "data-widearea": "enable", required: "required" %>
+        </div>
+      </div>
+      <div class="formats-create">
+        <div class="formats-create__item">
+          <div class="formats-create__remove">
+            <label for="days">
+              <span><%= t("activerecord.attributes.paste.ttl_days") %></span>
+              <span class="remove-days">
+                <%= form.text_field :ttl_days, class: "formats-create__days js-formats-create__days", id: "days", value: Paste::DEFAULT_TTL_DAYS, required: "" %>
+              </span>
+              <span><%= t("activerecord.attributes.paste.days") %></span>
+            </label>
+          </div>
+          <div class="formats-create__remove">
+            <label class="formats-create__label">
+              <%= form.check_box :auto_destroy, class: "formats-create__check" %>
+              <span class="label-text"><%= t("activerecord.attributes.paste.auto_destroy") %></span>
+            </label>
+          </div>
+        </div>
+        <div class="formats-create__item">
+          <div class="btn-box">
+            <%= form.submit t("pastes.form.create"), class: "button" %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

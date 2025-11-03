@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= content_for(:title) || "Xpaste" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Xpaste">
+    <meta name="mobile-web-app-capable" content="yes">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
+    <link rel="icon" href="/icon.png" type="image/png">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+
+    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "libs/autosize.min" %>
+    <%= javascript_include_tag "libs/choices.min" %>
+    <%= javascript_include_tag "libs/clipboard.min" %>
+    <%= javascript_include_tag "libs/prism" %>
+    <%= javascript_include_tag "libs/widearea.min" %>
+    <%= javascript_importmap_tags %>
+
+    <script>
+      (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function () {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+            m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+      })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+      ga('create', 'UA-89632404-1', 'auto');
+      ga('send', 'pageview');
+    </script>
+  </head>
+
+<body class="loaded hide-instruction">
+    <div class="main-wrapper">
+      <main class="content">
+        <div class="wrapper">
+          <%= yield %>
+        </div>
+      </main>
+
+      <header>
+        <div class="wrapper">
+          <div class="box-header">
+            <div class="box-header__left">
+              <div class="logo">
+                <a class="logo__link" href="<%= root_url %>">xPaste</a>
+              </div>
+              <div class="header-title">
+                <h1><%= t("leadline") %></h1>
+              </div>
+            </div>
+
+            <div class="box-header__right">
+              <div class="box-lang">
+                <%= render partial: "layouts/nav" %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <footer class="footer">
+        <div class="wrapper">
+          <div class="box-footer">
+            <div class="footer__item">
+              <span><%= t("copyright") %></span>
+              <a href="https://southbridge.io">Southbridge</a>
+            </div>
+            <div class="footer__item footer__item_links">
+              <a href="<%= help_path(locale: I18n.locale) %>"><%= t("help") %></a>
+              <a href="<%= policy_path(locale: I18n.locale) %>"><%= t("privacy_policy") %></a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
