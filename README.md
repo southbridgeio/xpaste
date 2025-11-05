@@ -1,24 +1,19 @@
-# README
+# xpaste.pro
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+We pack your password or code into a link
 
-Things you may want to cover:
+# Quick start
 
-* Ruby version
+1. Run via docker compose
 
-* System dependencies
+```docker compose -f docker-compose.yml up```
 
-* Configuration
+2. Then go to ```http://localhost:3000``` and you will see running web app.
 
-* Database creation
+# License
 
-* Database initialization
+xpaste.pro is released under the [MIT License](LICENSE)
 
-* How to run the test suite
+## Author
 
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Designed by [Southbridge](https://southbridge.io)
