@@ -9,6 +9,8 @@ class Paste < ApplicationRecord
 
   DEFAULT_TTL_DAYS = 365
 
+  scope :expired_at, -> { where("will_be_deleted_at < :time", time: Time.now) }
+
   def to_markdown
     Commonmarker.to_html(body, options: { smart: true }).html_safe
   end
