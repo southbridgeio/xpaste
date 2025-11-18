@@ -94,9 +94,14 @@ class PasteController < ApplicationController
     end
 
     unless request_body.valid_encoding?
-      safe_body = Shellwords.escape(request_body.encode("UTF-8", invalid: :replace, undef: :replace, replace: "?"))
-      command = "/bin/sh -c \"echo #{safe_body} | enconv -cL russian -x utf8\""
-      safe_body = IO.popen(command, "r") { |io| io.read }
+      begin
+        safe_body = Shellwords.escape(request_body.encode("UTF-8", invalid: :replace, undef: :replace, replace: "?"))
+        safe_body = IO.popen([ "enconv", "-cL", "russian", "-x", "utf8" ], "r+") do |io|
+          io.write safe_body
+          io.close_write
+          io.read
+        end
+      end
 
       return render plain: "Invalid encoding", status: :unprocessable_entity if safe_body.size.zero?
     end
