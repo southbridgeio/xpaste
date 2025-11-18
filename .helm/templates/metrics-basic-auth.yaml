@@ -1,0 +1,16 @@
+{{- if .Values.ingress.metrics.basicauth.enable -}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: {{ .Chart.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ .Release.Name }}-metrics-basic-auth
+type: Opaque
+data:
+{{ toYaml .Values.ingress.metrics.basicauth.passdb | indent 2 }}
+...
+{{- end }}

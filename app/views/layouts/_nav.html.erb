@@ -1,0 +1,10 @@
+<ul class="list-lang">
+  <% active = I18n.locale == I18n.default_locale ? "active" : "" %>
+  <li class="list-lang__item <%= active %>">
+    <a class="list-lang__link js-change-lang" href="<%= root_path(locale: "ru") %>">Ru</a>
+  </li>
+  <% active = I18n.locale == "en" ? "active" : "" %>
+  <li class="list-lang__item <%= active %>">
+    <a class="list-lang__link js-change-lang" href="<%= root_path(locale: "en") %>">En</a>
+  </li>
+</ul>

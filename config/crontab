@@ -1,0 +1,1 @@
+7 0 * * * . $HOME/.environment; /rails/bin/rails cleanup > /proc/1/fd/1 2>/proc/1/fd/2

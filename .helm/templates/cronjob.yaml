@@ -1,0 +1,69 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  labels:
+    app: {{ .Chart.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: cron
+{{- if .Values.review.enabled }}
+    environment: review
+{{- else }}
+    environment: {{ .Values.environment }}
+{{- end }}
+  name: {{ .Release.Name }}-cron
+spec:
+{{- if .Values.review.enabled }}
+  schedule: "*/3 * * * *"
+{{- else }}
+  schedule: "7 0 * * *"
+{{- end }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 3000
+      template:
+        metadata:
+          creationTimestamp: null
+          labels:
+            app: {{ .Chart.Name }}
+            release: {{ .Release.Name }}
+            component: cron
+{{- if .Values.review.enabled }}
+            environment: review
+{{- else }}
+            environment: {{ .Values.environment }}
+{{- end }}
+        spec:
+          containers:
+          - env:
+            {{- range $key, $val := .Values.env }}
+            - name: {{ $key | quote }}
+              value: {{ $val | quote }}
+            {{- end }}
+            {{- range $key, $val := .Values.envSecret }}
+            - name: {{ $key | quote }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ $key | lower | replace "_" "-" }}
+                  name: {{ $val }}
+            {{- end }}
+            - name: DATABASE_URL
+              value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+            image: {{ .Values.image }}:{{ .Values.imageTag}}
+            command: ["/rails/bin/rails", "cleanup"]
+            imagePullPolicy: IfNotPresent
+            name: cron
+            resources:
+{{ toYaml .Values.cron.resources | indent 14 }}
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          terminationGracePeriodSeconds: 20
+          imagePullSecrets:
+          - name: {{ .Values.imagePullSecret }}
+...

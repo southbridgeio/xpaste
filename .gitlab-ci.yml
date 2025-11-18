@@ -1,0 +1,357 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: none
+  GIT_DEPTH: 1
+  FF_USE_LEGACY_KUBERNETES_EXECUTION_STRATEGY: "false"
+
+default:
+  image: centosadmin/kubernetes-helm:3.12.3
+  tags:
+    - k8s-crm-xpaste-docker
+
+before_script:
+  - date
+
+after_script:
+  - date
+
+stages:
+  - prelinters
+  - linters
+  - build
+  - test
+  - deploy
+  - notify
+
+.notify:
+  allow_failure: true
+  timeout: 60s
+  variables:
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+  before_script:
+    - date
+    - chmod ugo+rx $CI_STATUS_SH
+  except:
+    - schedules
+
+notify_start:
+  extends: .notify
+  stage: prelinters
+  retry: 2
+  script:
+    - $CI_STATUS_SH 1 Run
+
+.lint:
+  stage: linters
+  timeout: 90s
+  interruptible: true
+
+helmlint:
+  extends: .lint
+  stage: prelinters
+  script:
+    - helm lint .helm
+    - helm template $CI_PROJECT_PATH_SLUG .helm --output-dir rendered-chart
+  artifacts:
+    paths:
+      - rendered-chart
+    expire_in: 1 hour
+
+yamllint:
+  extends: .lint
+  image: pipelinecomponents/yamllint
+  needs:
+    - helmlint
+  dependencies:
+    - helmlint
+  script:
+    - yamllint -f parsable -c .yamllint .
+    - yamllint -f colored -c .yamllint rendered-chart
+    - 'yamllint -f colored -d "{extends: relaxed, rules: {document-start: enable, document-end: enable}}" rendered-chart'
+  artifacts:
+    when: always
+    paths:
+      - rendered-chart
+    expire_in: 1 hour
+
+...eslint:
+  extends: .lint
+  tags:
+    - k8s-crm-xpaste
+  image:
+    name: cytopia/eslint
+    entrypoint: [""]
+  script:
+    - eslint -v
+    - eslint .
+
+.build:
+  stage: build
+  timeout: 900s
+  interruptible: true
+  image:
+    name: gcr.io/kaniko-project/executor:v1.20.0-debug
+    entrypoint: [""]
+  before_script:
+    - date
+    - export KANIKO="/kaniko/executor --cache=true --context . "
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > $DOCKER_CONFIG/config.json
+    - cd $CI_PROJECT_DIR
+  only:
+    - branches
+  except:
+    - main
+    - schedules
+  tags:
+    - k8s-crm-xpaste
+  dependencies: []
+
+build:
+  extends: .build
+  script:
+    - $KANIKO --dockerfile Dockerfile --target base
+      --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID.base
+    - $KANIKO --dockerfile Dockerfile --target build
+      --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID.build
+    - $KANIKO --dockerfile Dockerfile
+      --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID
+
+build-latest:
+  extends: .build
+  script:
+    - $KANIKO --dockerfile Dockerfile
+      --destination $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID
+      --destination $CI_REGISTRY_IMAGE:latest
+  only:
+    - main
+  except:
+    - schedules
+
+.test:
+  stage: test
+  interruptible: true
+  timeout: 360s
+  dependencies: []
+  variables:
+    POSTGRES_PASSWORD: postgres
+    POSTGRES_DB: x_paste_test
+    DB_HOST: db
+    DB_PORT: 5432
+    DB_USER: postgres
+    DB_PASSWORD: postgres
+    DB_NAME: x_paste_test
+    AMBER_ENV: production
+    HOST: 0.0.0.0
+    PROCESS_COUNT: 1
+    npm_config_cache: "$CI_PROJECT_DIR/.npm"
+    CYPRESS_CACHE_FOLDER: "$CI_PROJECT_DIR/cache/Cypress"
+    CYPRESS_baseUrl: "http://app:3000"
+    CI: 1
+    CYPRESS_CRASH_REPORTS: 0
+
+# trivy:
+#   extends: .test
+#   image: aquasec/trivy
+#   variables:
+#     GIT_STRATEGY: none
+#     TRIVY_LIGHT: "true"
+#     TRIVY_NO_PROGRESS: "true"
+#     TRIVY_IGNORE_UNFIXED: "true"
+#     TRIVY_AUTH_URL: $CI_REGISTRY
+#     TRIVY_USERNAME: $CI_REGISTRY_USER
+#     TRIVY_PASSWORD: $CI_REGISTRY_PASSWORD
+#     TRIVY_CACHE_DIR: $CI_PROJECT_DIR/.trivycache
+#   script:
+#     - trivy --exit-code 0 --severity UNKNOWN,LOW,MEDIUM,HIGH $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID
+#     - trivy --exit-code 1 --severity CRITICAL $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID
+#   cache:
+#     paths:
+#       - .trivycache/
+#   retry: 1
+
+...test_white_box:
+  extends: .test
+  image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID.build-env
+  except:
+    - main                    # dont make build-env image to keep in registry
+  services:
+    - name: postgres:11
+      alias: db
+      command:
+        - -c
+        - fsync=off
+        - -c
+        - full_page_writes=off
+  script:
+    - cd /app
+    - /app/bin/wait-for db:5432 -- crystal spec
+
+.test_system:
+  extends: .test
+  image: cypress/base:12
+  services:
+    - name: postgres:11
+      alias: db
+      command:
+        - -c
+        - fsync=off
+        - -c
+        - full_page_writes=off
+    - name: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID
+      alias: app
+      command:
+        - /app/bin/wait-for
+        - -t
+        - "25"
+        - db:5432
+        - --
+        - /app/bin/docker-entrypoint.sh
+  script:
+    - sleep 60
+    - npm ci
+    - $(npm bin)/cypress cache path
+    - $(npm bin)/cypress cache list
+    - $(npm bin)/cypress verify
+    - $(npm bin)/cypress run --headless
+  artifacts:
+    when: always
+    paths:
+      - cypress/screenshots
+    expire_in: 3 days
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - .npm
+      - cache/Cypress
+      - node_modules
+
+.deploy:
+  stage: deploy
+  timeout: 600s
+  variables:
+    TOKEN: $K8S_CI_TOKEN
+  except:
+    - schedules
+  dependencies: []
+  before_script:
+    - date
+    - echo "$K8S_API_URL"
+    - echo "$TOKEN"
+    - kubectl config set-cluster k8s --insecure-skip-tls-verify=true --server="$K8S_API_URL"
+    - kubectl config set-credentials ci --token="$TOKEN"
+    - kubectl config set-context ci --cluster=k8s --user=ci
+    - kubectl config use-context ci
+    - kubectl version
+    - export NS="$CI_PROJECT_PATH_SLUG-$CI_ENVIRONMENT_SLUG"
+    - echo $NS
+    - kubectl create secret docker-registry web-x-gitlab-registry
+      --docker-email noreply@example.com
+      --docker-username "$CI_DEPLOY_USER"
+      --docker-password "$CI_DEPLOY_PASSWORD"
+      --docker-server "$CI_REGISTRY"
+      --namespace "$NS"
+      --dry-run=client -o yaml | kubectl apply -f -
+#  tags:
+#    - k8s-crm-xpaste
+
+deploy-prod:
+  extends: .deploy
+  environment:
+    name: production
+    url: http://xpaste.pro
+  only:
+    - main
+  script:
+    - helm upgrade --install $CI_PROJECT_PATH_SLUG .helm
+      --set image=$CI_REGISTRY_IMAGE
+      --set imageTag=$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID
+      --values .helm/values.yaml
+      --values .helm/values.$CI_ENVIRONMENT_SLUG.yaml
+      --timeout 180s
+      --atomic
+      --debug
+      --namespace $NS
+
+deploy-stage:
+  extends: deploy-prod
+  environment:
+    name: stage
+    url: http://dev.xpaste.pro
+  only:
+    - develop
+  variables:
+    TOKEN: $K8S_CI_TOKEN_STAGE
+
+review:
+  extends: .deploy
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: http://$CI_ENVIRONMENT_SLUG.xpaste.pro
+    on_stop: stop_review
+  when: manual
+  only:
+    - branches
+  except:
+    - main
+    - develop
+    - schedules
+  variables:
+    TOKEN: $K8S_CI_TOKEN_REVIEW
+  script:
+    - kubectl create namespace $NS
+      --dry-run=client -o yaml | kubectl apply -f -
+    - kubectl create secret generic web-x
+      --from-literal=db-user=xpaste
+      --from-literal=db-password=secretpass
+      --from-literal=secret-key-base=e11282da5b77190170d0169abe275bca6ab8124f001e4ea2fcb0225ded9e947abad
+      --namespace "$NS"
+      --dry-run=client -o yaml | kubectl apply -f -
+    - kubectl create rolebinding developer
+      --clusterrole=view-exec
+      --serviceaccount=users:developer
+      --namespace "$NS"
+      --dry-run=client -o yaml | kubectl apply -f -
+    - helm upgrade --install $CI_ENVIRONMENT_SLUG .helm
+      --set image=$CI_REGISTRY_IMAGE
+      --set imageTag=$CI_COMMIT_REF_SLUG.$CI_PIPELINE_ID
+      --set env.DB_HOST=$CI_ENVIRONMENT_SLUG-postgresql
+      --set "ingress.host=$(echo ${CI_ENVIRONMENT_URL} | cut -d / -f 3)"
+      --set review.enabled=true
+      --timeout 360s
+      --wait
+      --debug
+      --namespace "$NS"
+
+stop_review:
+  extends: .deploy
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
+  only:
+    - branches
+  except:
+    - main
+    - develop
+    - schedules
+  variables:
+    TOKEN: $K8S_CI_TOKEN_REVIEW
+    GIT_STRATEGY: none
+  script:
+    - kubectl delete namespace "$NS"
+
+notify fail:
+  extends: .notify
+  stage: notify
+  script:
+    - $CI_STATUS_SH 0 FAIL
+    - sh -c false
+  when: on_failure
+
+notify success:
+  extends: .notify
+  stage: notify
+  retry: 2
+  script:
+    - $CI_STATUS_SH 1 OK
+  when: on_success

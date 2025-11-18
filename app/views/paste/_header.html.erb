@@ -1,0 +1,20 @@
+<div class="header">
+  <strong><%= t("activerecord.attributes.paste.language") %>: </strong>
+  <%= @language %>
+  <br>
+  <strong><%= t("activerecord.attributes.paste.created_at") %>: </strong>
+  <%= localized_date(@paste.created_at) %>
+  <br>
+  <strong><%= t("activerecord.attributes.paste.will_be_deleted_at") %>: </strong>
+  <%= localized_date(@paste.will_be_deleted_at) %>
+  <br>
+  <br>
+  <div class="box-field__input">
+    <input class="form-control" value="<%= p_url(@paste.permalink) %>" id="url" readonly="readonly">
+    <button class="btn clipboard" data-clipboard-target="#url" title="<%= t("pastes.form.btn_copy_hint") %>" data-msg="<%= t("pastes.form.btn_copy_msg") %>">
+      <i class="fas fa-copy fa-2x"></i>
+    </button>
+    <a class="btn" href="<%= raw_p_url(@paste.permalink) %>" title="RAW">RAW</a>
+  </div>
+  <br>
+</div>

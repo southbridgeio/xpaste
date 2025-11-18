@@ -1,0 +1,53 @@
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    command: sh -c 'set -ex && cd  /rails && bin/rails db:create && bin/rails db:migrate && bin/rails s'
+    ports:
+      - "3000:3000"
+    environment:
+      SECRET_KEY_BASE: 8da372672a69a01e4eb4e6eab962c505a611d03603675cc042e44c7e79bd006382bb19ea701931c37210a5199a00bfc928b774bfd18d80eb139be46ff48faa70
+      RAILS_ENV: production
+      DATABASE_URL: postgres://postgres:postgres@db:5432/x_paste_database
+      HOST: 0.0.0.0
+      PROCESS_COUNT: 1
+      ERRBIT_HOST: errbit-host
+      ERRBIT_PROJECT_ID: xpaste-id
+      ERRBIT_PROJECT_KEY: xpaste-key
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: wget -qO- http://localhost:3000/health
+      interval: 1s
+      timeout: 1s
+      retries: 30
+
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: x_paste_database
+    command: -c fsync=off -c full_page_writes=off
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 1s
+      timeout: 1s
+      retries: 60
+    logging:
+      driver: none
+
+  # test_suite:
+  #   build:
+  #     context: ./
+  #     dockerfile: Dockerfile.cypress
+  #   depends_on:
+  #     app:
+  #       condition: service_healthy
+  #   environment:
+  #     - CYPRESS_baseUrl=http://app:3000
+  #   command: npx cypress run --headless -b chrome
+  #   volumes:
+  #     - ./cypress:/app/cypress
+  #     - ./cypress.json:/app/cypress.json

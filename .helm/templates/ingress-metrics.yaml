@@ -1,0 +1,38 @@
+{{- if .Values.ingress.metrics.basicauth.enable -}}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    nginx.ingress.kubernetes.io/auth-type: "basic"
+    nginx.ingress.kubernetes.io/auth-realm: "metrics"
+    nginx.ingress.kubernetes.io/auth-secret: "{{ .Release.Name }}-metrics-basic-auth"
+    nginx.ingress.kubernetes.io/auth-secret-type: "auth-map"
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+    nginx.ingress.kubernetes.io/limit-rate: "10"
+  labels:
+    app: {{ .Chart.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: app
+  name: {{ .Release.Name }}-metrics
+spec:
+  ingressClassName: {{ .Values.ingress.classname }}
+  rules:
+  - host: {{ .Values.ingress.host }}
+    http:
+      paths:
+      - path: /metrics
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Release.Name }}
+            port:
+              number: {{ .Values.service.port }}
+  tls:
+  - hosts:
+    - {{ .Values.ingress.host }}
+    secretName: {{ .Release.Name }}-tls
+...
+{{- end }}

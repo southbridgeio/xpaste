@@ -1,0 +1,72 @@
+@use "../utils" as *;
+
+/*
+================================================================================
+|                                     FOOTER                                   |
+================================================================================
+*/
+footer{
+
+
+	min-width: $min-width;
+	order: 3;
+	-webkit-order: 3;
+}
+
+.box-footer{
+	width:calc(100% - 317px);
+		display: flex;
+		justify-content: space-between;
+		padding: 15px 0;
+		a:hover{
+		color: #fc997d;
+	}
+}
+body.hide-instruction{
+	.box-footer{
+		width: 100%;
+	}
+}
+.footer__item_links a{
+	margin-left: 17px;
+}
+.footer__item{
+	font-size: 14px;
+	line-height: 18px;
+}
+@media screen and (max-width: 1200px) {
+
+}
+
+@media screen and (min-width: 992px){
+
+}
+
+@media screen and (max-width: 991px) {
+
+}
+
+@media screen and (min-width: 768px) and (max-width: 991px) {
+
+}
+
+@media screen and (max-width: 767px) {
+	.box-footer {
+		padding: 30px 0;
+		display: block;
+		text-align: center;
+		width: 100%;
+	}
+	.footer__item_links {
+	    margin-top: 20px;
+	}
+	.footer__item_links a:first-child{
+		display: block;
+		width: 100%;
+	}
+	.footer__item_links a {
+		display: block;
+		margin: 0 0 0.8em 0;
+		width: 100%;
+	}
+}

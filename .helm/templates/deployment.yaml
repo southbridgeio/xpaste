@@ -1,0 +1,109 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Chart.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    component: app
+{{ if .Values.review.enabled }}
+    environment: review
+{{ else }}
+    environment: {{ .Values.environment }}
+{{ end }}
+  name: {{ .Release.Name }}
+spec:
+  progressDeadlineSeconds: 180
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Chart.Name }}
+      release: {{ .Release.Name }}
+      component: app
+{{ if .Values.review.enabled }}
+      environment: review
+{{ else }}
+      environment: {{ .Values.environment }}
+{{ end }}
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  revisionHistoryLimit: 5
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: {{ .Chart.Name }}
+        release: {{ .Release.Name }}
+        component: app
+{{ if .Values.review.enabled }}
+        environment: review
+{{ else }}
+        environment: {{ .Values.environment }}
+{{ end }}
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - app
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - env:
+        {{- range $key, $val := .Values.env }}
+        - name: {{ $key | quote }}
+          value: {{ $val | quote }}
+        {{- end }}
+        {{- range $key, $val := .Values.envSecret }}
+        - name: {{ $key | quote }}
+          valueFrom:
+            secretKeyRef:
+              key: {{ $key | lower | replace "_" "-" }}
+              name: {{ $val }}
+        {{- end }}
+        - name: DATABASE_URL
+          value: "postgres://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+        image: {{ .Values.image }}:{{ .Values.imageTag}}
+        imagePullPolicy: IfNotPresent
+        name: app
+        ports:
+        - containerPort: {{ .Values.service.port }}
+          name: http
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 30
+          httpGet:
+            path: /health
+            port: {{ .Values.service.port }}
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        livenessProbe:
+          initialDelaySeconds: 90
+          failureThreshold: 3
+          httpGet:
+            path: /health
+            port: {{ .Values.service.port }}
+            scheme: HTTP
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+{{ toYaml .Values.app.resources | indent 10 }}
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 20
+      imagePullSecrets:
+      - name: {{ .Values.imagePullSecret }}
+...

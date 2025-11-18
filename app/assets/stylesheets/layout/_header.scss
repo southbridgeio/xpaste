@@ -1,0 +1,149 @@
+@use "../utils" as *;
+
+/*
+================================================================================
+|                                     HEADER                                   |
+================================================================================
+*/
+header{
+	width:100%;
+	min-width: $min-width;
+	text-align:left;
+	order: 1;
+	-webkit-order: 1;
+	padding-top: 0;
+}
+.header-title{
+	padding-left: 15px;
+}
+.box-header{
+	display: flex;
+	justify-content: space-between;
+	padding-bottom: 8px;
+	border-bottom: 1px solid  #E0DEDE;
+	width: calc(100% - 317px);
+	&__left{
+		display: flex;
+		align-items: center;
+		justify-content: flex-start;
+	}
+	&__right{
+		display: flex;
+		justify-content: space-around;
+		align-items: center;
+		padding-top: 4px;
+	}
+}
+
+body.hide-instruction .box-header{
+	width: 100%;
+}
+
+.logo{
+	align-self: start;
+	&__link{
+		background: #2E2E2E;
+		width: 94px;
+		height: 32px;
+		display: block;
+		font-family: 'PT Mono', monospace;
+		font-style: normal;
+		font-weight: 400;
+		line-height: normal;
+		font-size: 18px;
+		color: #fff;
+		text-align: center;
+		padding-top: 5px;
+		border-radius: 0px 0px 2px 2px;
+
+	}
+}
+
+.header-title{
+	padding-right: 10px;
+}
+.list-lang{
+	list-style-type: none;
+	display: flex;
+	justify-content: flex-start;
+	margin-right: 10px;
+	&__item{
+		font-style: normal;
+		font-weight: 400;
+		line-height: 18px;
+		font-size: 14px;
+		text-align: right;
+		color: #FF6639;
+		margin-right: 7px;
+		width: 20px;
+		height: 20px;
+		background-color: transparent;
+		color: #FF6639;
+		border-radius: 50%;
+		text-align: center;
+		&:last-child{
+			margin-right: 0;
+		}
+		&.active{
+			color: #fff;
+			background: #FF6639;
+			.list-lang__link{
+				pointer-events:none;
+			}
+		}
+
+	}
+	&__link{
+		font-size: inherit;
+		color: inherit;
+		line-height: inherit;
+		border-bottom: 1px solid transparent;
+		@media screen and (min-width: 992px){
+			&:hover{
+				opacity: 0.7;
+			}
+		}
+
+	}
+}
+.box-login{
+	font-size: 14px;
+	line-height: 18px;
+	margin-left: 8px;
+	a:hover{
+color: #fc997d;
+	}
+}
+// .box-login{
+// 	a:hover{
+// 		color: #fc997d;
+// 	}
+// }
+@media screen and (max-width: 1200px) {
+
+}
+
+
+@media screen and (max-width: 991px) {
+
+}
+
+@media screen and (min-width: 768px){
+
+}
+
+@media screen and (max-width: 767px) {
+	.box-header{
+		padding-bottom: 5px;
+		width: 100%;
+	}
+	.box-header__right{
+		padding-top: 1px;
+	}
+}
+
+@media screen and (max-width: 440px) {
+	.header-title{
+		display: none;
+	}
+}

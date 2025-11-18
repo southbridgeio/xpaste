@@ -1,0 +1,13 @@
+---
+# stage-specific helm values for chart
+environment: stage
+
+env:
+  DB_NAME: xpaste_dev
+  ERRBIT_PROJECT_KEY: 617d18db646e56a887e91a1a8daf6e5e
+
+replicas: 1
+
+ingress:
+  host: dev.xpaste.pro
+...

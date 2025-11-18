@@ -1,0 +1,15 @@
+<% if @paste.auto_destroy? && params[:destroy] !=  "true" %>
+  <%= render partial: "auto_destroy" %>
+<% else %>
+  <div class="code_wrap">
+    <%= render partial: "header" %>
+    <%= render partial: "body" %>
+
+    <% if @paste.auto_destroy? %>
+      <div class="destroyed">
+        <img src="<%= asset_path('trash.svg') %>">
+        <%= t("pastes.show.paste_destroyed") %>
+      </div>
+    <% end %>
+  </div>
+<% end %>

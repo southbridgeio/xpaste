@@ -1,0 +1,11 @@
+<div class="not_found">
+  <h1 class="title"><%= t("not_found.title") %></h1>
+  <br>
+  <div><%= t("not_found.desc") %></div>
+  <br>
+  <%= link_to t("pastes.show.go_to_root"), "/", class: "button alt_button" %>
+
+  <div class="image">
+    <img src="<%= asset_path('robo.svg') %>">
+  </div>
+</div>

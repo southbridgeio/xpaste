@@ -1,0 +1,15 @@
+apiVersion: v2
+name: x
+version: 1.0.0
+description: XPaste Helm chart for Kubernetes.
+home: https://xpaste.pro/
+maintainers:
+- email: p.selivanov@southbridge.ru
+  name: Pavel Selivanov
+sources:
+- https://gitlab.southbridge.ru/web/x
+dependencies:
+  - name: postgresql
+    version: "18.1.4"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: review.enabled

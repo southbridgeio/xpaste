@@ -1,0 +1,16 @@
+{{- if .Values.ingress.errors.basicauth.enable -}}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app: {{ .Chart.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  name: {{ .Release.Name }}-errors-basic-auth
+type: Opaque
+data:
+{{ toYaml .Values.ingress.errors.basicauth.passdb | indent 2 }}
+...
+{{- end }}

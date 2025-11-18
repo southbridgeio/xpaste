@@ -1,0 +1,81 @@
+en:
+  help: "Help"
+  hints: "Hints"
+  leadline: "We pack your password or code into a link"
+  privacy_policy: "Privacy Policy"
+  copyright: "Made by "
+  enumerize:
+    paste:
+      language:
+        text: "Plain Text"
+        markdown: "Markdown"
+  activerecord:
+    models:
+      paste: "Paste"
+    attributes:
+      paste:
+        body: "Body"
+        language: "Language"
+        auto_destroy: "Destroy after viewing"
+        created_at: "Created at"
+        will_be_deleted_at: Delete at
+        ttl_days: Delete after
+        days: days
+  not_found:
+    title: This page was deleted
+    desc: If it was a link, it has been destroyed.
+  pastes:
+    new:
+      title: "New Paste"
+    show:
+      go_to_root: "Go to root page"
+      open_and_destroy: "Open and Destroy Paste"
+      destroy_alert: "The paste will be destroyed after viewing"
+      paste_destroyed: "Paste has been destroyed"
+    help:
+      contact_with_us: "Contact us"
+      open_page: "To open a page without highlighting, add ?highlight=false parameter to the URL."
+      open_page_raw: "To open a paste as a raw text without any markup, add ?raw parameter to the URL."
+      create_method:
+        title: "You can create a paste in three ways"
+        form: "using the form on this web-site"
+        text_post: "making a POST text request"
+        json_post: "making a JSON POST request"
+      post_address: "POST request URL"
+      available_params: "Available params"
+      text_length_limit: "no larger than"
+      required: "required"
+      max_text_limit: "The maximum length of text"
+      one_of_x_values: "can take one of the two values: "
+      or: "or"
+      default_language: "If language is markdown and content length more than 4KB, then language will be forced to plaintext. Without this parameter the default parameter will be set"
+      auto_destroy: "must be set if you want to destroy the paste right after viewing. Otherwise, don't sent it."
+      text_examples: "Examples of a text request"
+      short_text: "Short text"
+      file_sending: "File sending"
+      long_text: "If a message is large send it as a file"
+      long_text_cut: "512kb is the not-to-exceed amount of data per paste. Any amount beyond this limit will be not saved."
+      auto_destroy_example: "Example of a request to create an auto-destroing paste"
+      json_request: "JSON request"
+      ttl_days: "deletes a note after specified number of days. Default - 365."
+      ttl_days_example: "Example of a request to create a paste with a specified number of days lifetime:"
+    form:
+      create: "Create"
+      placeholder: "Your password or code"
+      btn_copy_hint: "Copy to clipboard"
+      btn_copy_msg: "Copied"
+      btn_download_hint: "Download the original"
+      formats:
+        text: Text
+        password: Password
+        code: Code
+      banner:
+        packs: "packs text into one-time and/or reusable links to share via messengers"
+        one-time: "One-time link — to safe-share passwords via messengers"
+        1: "Check the box"
+        2: "Your friend opens the link"
+        3: "The link is destroyed"
+        reusable: "Reusable link to share code via messengers"
+        compact_chat: "Compact chat"
+        syntax: "Code highlighter for various languages"
+        copy: "Convenient copying"

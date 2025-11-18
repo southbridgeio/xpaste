@@ -1,0 +1,88 @@
+# This is a YAML-formatted file.
+
+image: registry.southbridge.ru/web/x
+imageTag: master.45932
+imagePullSecret: web-x-gitlab-registry
+
+# Defines "environment" label on API objects:
+environment: review
+
+env:
+  RAILS_ENV: production
+  DB_HOST: '10.10.0.102'
+  DB_PORT: 5432
+  DB_NAME: xpaste
+  ERRBIT_HOST: https://errbit.southbridge.io
+  ERRBIT_PROJECT_ID: 1
+  ERRBIT_PROJECT_KEY: 617d18db646e56a887e91a1a8daf6e5e
+
+# This variables is taken from secret
+# Value is secret name where variable value can be found
+# Key in secret equals lowercased variable name with "_" replaced by "-"
+# The secret should be created manually
+envSecret:
+  SECRET_KEY_BASE: web-x
+  DB_USER: web-x
+  DB_PASSWORD: web-x
+
+# Resources for app. Limits is the maximum number of resources that app cas use.
+# And requests is resources that will be granted to the app at start time.
+replicas: 1
+
+app:
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+
+cron:
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 512Mi
+
+service:
+  port: 3000
+
+# disable to turn off /metrics scraping:
+serviceMonitor:
+  enabled: false
+
+# disable to turn off prometheus alerting:
+prometheusRule:
+  enabled: false
+
+ingress:
+  classname: nginx
+  host: foobar.xpaste.pro
+  # Warning! Use for basic auth base64-encoded hashed htpasswd (example: htpasswd -n LOGIN)
+  errors:
+    basicauth:
+      enable: true
+      passdb:
+        errors: JGFwcjEkTVg1UE05ZEQkLlhEenBPSDlKSm1CNHFIT2YzYjQwMAo=
+  metrics:
+    basicauth:
+      enable: true
+      passdb:
+        zabbix: JGFwcjEkZkdnT2RZdjAkNUM4enBDTHJiN1NRRURNM0JXN2ZJLg==
+
+# Determine if we in review env
+review:
+  enabled: false
+
+# For review environments, will be enabled automatically:
+postgresql:
+  primary:
+    persistence:
+      enabled: false
+  auth:
+    database: xpaste
+    username: xpaste
+    password: secretpass

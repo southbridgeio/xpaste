@@ -1,0 +1,13 @@
+---
+# production-specific helm values for chart
+environment: production
+
+env:
+  DB_NAME: xpaste
+  ERRBIT_PROJECT_KEY: 8cf5f17368a696961c4429f3aa8db1e9
+
+ingress:
+  host: xpaste.pro
+
+replicas: 1
+...
