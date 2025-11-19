@@ -50,8 +50,7 @@ class PasteController < ApplicationController
 
   def create
     @paste = Paste.new(paste_params)
-    @paste.auto_destroy = paste_params[:auto_destroy] && (paste_params[:auto_destroy].to_i == 1 || paste_params[:auto_destroy] == "true")
-    @paste.auto_destroy = false unless @paste.auto_destroy
+    @paste.auto_destroy = is_auto_destroy_true?(paste_params[:auto_destroy])
     @paste.ttl_days = paste_params[:ttl_days] ? paste_params[:ttl_days].to_i : Paste::DEFAULT_TTL_DAYS
     @paste.permalink = generate_token
 
@@ -67,7 +66,7 @@ class PasteController < ApplicationController
         format.any  { render plain: "#{root_url.chomp('/')}#{url}" }
       end
     rescue StandardError => ex
-      Airbrake.notify(ex)
+      notify_airbrake(ex, params)
 
         respond_to do |format|
           format.html { render :new, status: :unprocessable_entity }
@@ -76,7 +75,7 @@ class PasteController < ApplicationController
     end
 
   rescue StandardError => ex
-    Airbrake.notify(ex)
+    notify_airbrake(ex, params)
 
     raise ex
   end
@@ -96,14 +95,16 @@ class PasteController < ApplicationController
     unless request_body.valid_encoding?
       begin
         safe_body = Shellwords.escape(request_body.encode("UTF-8", invalid: :replace, undef: :replace, replace: "?"))
-        safe_body = IO.popen([ "enconv", "-cL", "russian", "-x", "utf8" ], "r+") do |io|
+        request_body = IO.popen([ "enconv", "-cL", "russian", "-x", "utf8" ], "r+") do |io|
           io.write safe_body
           io.close_write
           io.read
         end
+      rescue
+        return render plain: "Invalid encoding", status: :unprocessable_entity
       end
 
-      return render plain: "Invalid encoding", status: :unprocessable_entity if safe_body.size.zero?
+      return render plain: "Invalid encoding", status: :unprocessable_entity if request_body.size.zero?
     end
 
     paste = Paste.new
@@ -117,11 +118,11 @@ class PasteController < ApplicationController
       paste.save!       # Will throw an exception when the save failed
       render plain: "#{root_url}/p/#{paste.permalink}\n"
     rescue StandardError => ex
-      Airbrake.notify(ex)
+      notify_airbrake(ex, params)
       render plain: paste.errors.full_messages.join(", "), status: :unprocessable_entity
     end
   rescue StandardError => ex
-    Airbrake.notify(ex)
+    notify_airbrake(ex, params)
 
     raise ex
   end
@@ -160,5 +161,16 @@ class PasteController < ApplicationController
       token = Paste.generate_token
     end
     token
+  end
+
+  def is_auto_destroy_true?(value)
+    return false unless value.present?
+
+    begin
+      value == true || value == "true" || value.to_i == 1
+    rescue
+      notify_airbrake(ex, { value: value })
+      false
+    end
   end
 end
